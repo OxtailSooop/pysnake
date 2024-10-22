@@ -139,6 +139,7 @@ class Game:
     score = 0
     score_text = None
     dead = False
+    highscore = 0
 
     def __init__(self):
         pygame.init()
@@ -157,7 +158,16 @@ class Game:
         self.apple.apple_rand()
         # we want the player to render over the apple so the order is important
         self.sprites.add((self.apple, self.player))
+        self.highscore = self.load_highscore()
         self.score_text = self.font.render("score: " + str(self.score), True, (0, 0, 0))
+    def die(self):
+        self.dead = True
+        if self.score > self.highscore:
+            open("highscore", "w").write(str(self.score))
+            self.highscore = self.score
+    def load_highscore(self):
+        return int(open("highscore", "w+").read() or 0)
+            
     def update(self):
         for event in pygame.event.get():
             match event.type:
@@ -178,13 +188,13 @@ class Game:
                 # self.player.add_tail(self.sprites)
 
             if self.player.rect.bottom > HEIGHT:
-                self.dead = True
+                self.die()
             if self.player.rect.top < 0:
-                self.dead = True
+                self.die()
             if self.player.rect.left < 0:
-                self.dead = True
+                self.die()
             if self.player.rect.right > WIDTH:
-                self.dead = True
+                self.die()
         else:
             if self.keys[pygame.K_SPACE]:
                 self.dead = False
@@ -209,8 +219,12 @@ class Game:
             score_text_rect = score_text.get_rect(center=((WIDTH / 2), (HEIGHT / 2) - (score_text.get_rect().height / 2) + 25))
             self.display.blit(score_text, score_text_rect)
 
+            highscore_text = self.font.render("highscore: " + str(self.highscore), False, (0, 0, 0))
+            highscore_text_rect = highscore_text.get_rect(center=((WIDTH / 2), (HEIGHT / 2) - (highscore_text.get_rect().height / 2) + 50))
+            self.display.blit(highscore_text, highscore_text_rect)
+
             space_cont = self.font.render("press space to continue", False, (0, 0, 0))
-            space_cont_rect = space_cont.get_rect(center=((WIDTH / 2), (HEIGHT / 2) - (space_cont.get_rect().height / 2) + 50))
+            space_cont_rect = space_cont.get_rect(center=((WIDTH / 2), (HEIGHT / 2) - (space_cont.get_rect().height / 2) + 75))
             self.display.blit(space_cont, space_cont_rect)
         else:
             self.display.blit(self.score_text, (0, 0))
